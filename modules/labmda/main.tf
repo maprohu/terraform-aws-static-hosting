@@ -25,21 +25,17 @@ data "aws_iam_policy_document" "lambda_secret" {
       "secretsmanager:GetSecretValue"
     ]
     resources = [
-      var.var.secret_arn
+      var.secret_arn
     ]
   }
 }
 
-locals {
-  prefix        = var.name
-}
-
 resource "aws_iam_role" "lambda" {
-  name               = "${local.prefix}_iam_role"
+  name               = "${var.name}_iam_role"
   assume_role_policy = data.aws_iam_policy_document.lambda.json
 
   inline_policy {
-    name = "read_secret"
+    name   = "read_secret"
     policy = data.aws_iam_policy_document.lambda_secret.json
   }
 }
@@ -53,9 +49,9 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
   policy_arn = data.aws_iam_policy.lambda_basic_execution.arn
 }
 
-resource "aws_lambda_function" "trigger_github_action" {
+resource "aws_lambda_function" "lambda" {
   filename      = data.archive_file.lambda.output_path
-  function_name = local.prefix
+  function_name = var.name
   role          = aws_iam_role.lambda.arn
   handler       = var.lambda_handler
 
@@ -69,6 +65,6 @@ resource "aws_lambda_function" "trigger_github_action" {
 }
 
 resource "aws_lambda_function_url" "lambda" {
-  function_name      = aws_lambda_function.trigger_github_action.function_name
+  function_name      = aws_lambda_function.lambda.function_name
   authorization_type = "NONE"
 }
