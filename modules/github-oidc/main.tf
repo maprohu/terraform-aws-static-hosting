@@ -15,7 +15,3 @@ resource "aws_iam_role_policy_attachment" "policy" {
   role = module.iam_github_oidc_role.name
   policy_arn = each.key
 }
-
-output "role_arn" {
-  value = module.iam_github_oidc_role.arn
-}
