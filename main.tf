@@ -2,10 +2,6 @@ module "bucket" {
   source      = "./modules/bucket"
   bucket_name = var.bucket_name
 }
-module "bucket_public" {
-  source    = "./modules/bucket-public"
-  bucket_id = module.bucket.bucket_id
-}
 
 module "ssl_cert" {
   source      = "./modules/ssl-certificate"
