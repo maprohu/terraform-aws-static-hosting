@@ -24,10 +24,12 @@ data "aws_iam_policy_document" "lambda_secret" {
     actions = [
       "secretsmanager:GetSecretValue"
     ]
-    resources = [
-      var.secret_arn
-    ]
+    resources = var.secret_arns
   }
+}
+
+locals {
+  has_secrets = length(var.secret_arns) > 0
 }
 
 resource "aws_iam_role" "lambda" {
@@ -35,8 +37,8 @@ resource "aws_iam_role" "lambda" {
   assume_role_policy = data.aws_iam_policy_document.lambda.json
 
   inline_policy {
-    name   = "read_secret"
-    policy = data.aws_iam_policy_document.lambda_secret.json
+    name   = local.has_secrets ? "read_secret" : null
+    policy = local.has_secrets ? data.aws_iam_policy_document.lambda_secret.json : null
   }
 }
 
