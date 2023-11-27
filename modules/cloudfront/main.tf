@@ -2,6 +2,34 @@ data "aws_s3_bucket" "hosting" {
   bucket = var.bucket_id
 }
 
+data "aws_iam_policy_document" "hosting_allow_cloudfront" {
+  statement {
+    principals {
+      type        = "Service"
+      identifiers = ["cloudfront.amazonaws.com"]
+    }
+
+    actions = [
+      "s3:GetObject",
+    ]
+
+    resources = [
+      "${data.aws_s3_bucket.hosting.arn}/*",
+    ]
+
+    condition {
+      test     = "StringEquals"
+      variable = "AWS:SourceArn"
+      values   = [aws_cloudfront_distribution.static_site_distribution.arn]
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "static_site_storage_allow_dist" {
+  bucket = data.aws_s3_bucket.hosting.id
+  policy = data.aws_iam_policy_document.hosting_allow_cloudfront.json
+}
+
 locals {
   prefix       = data.aws_s3_bucket.hosting.id
   s3_origin_id = "${local.prefix}-cloudfront-origin"
@@ -30,7 +58,7 @@ resource "aws_cloudfront_distribution" "static_site_distribution" {
     target_origin_id       = local.s3_origin_id
     viewer_protocol_policy = "redirect-to-https"
     # https://us-east-1.console.aws.amazon.com/cloudfront/v4/home?region=us-east-1#/policies/cache/658327ea-f89d-4fab-a63d-7e88639e58f6
-    cache_policy_id        = "658327ea-f89d-4fab-a63d-7e88639e58f6"
+    cache_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6"
   }
 
   restrictions {

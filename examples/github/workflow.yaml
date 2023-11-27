@@ -1,0 +1,41 @@
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: github-workflow-aws
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+
+      - name: Use Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_wrapper: false
+
+      - name: Install ZX
+        run: npm install -g zx
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE }}
+          aws-region: eu-central-1
+
+      - run: |
+          echo start build and deploy here!
+          
+
+    
