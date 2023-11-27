@@ -8,7 +8,7 @@ module "bucket_public" {
 }
 
 module "ssl_cert" {
-  source      = "./modules/ssl-certificate-single"
+  source      = "./modules/ssl-certificate"
   domain_name = var.domain_name
   host_name   = var.host_name
 }
